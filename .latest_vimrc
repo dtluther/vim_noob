@@ -1,0 +1,203 @@
+set nocompatible
+filetype off
+
+"--- Install plug in case it isn't
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
+
+"--- Plug plugins
+call plug#begin('~/.vim/plugged')
+
+" a better Ctrl-P
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+" ack, a better grep
+Plug 'mileszs/ack.vim'
+" a better colorscheme
+Plug 'vim-scripts/wombat256.vim'
+Plug 'vim-airline/vim-airline'
+Plug 'powerline/powerline', {'rtp': 'powerline/bindings/vim/'}
+Plug 'powerline/powerline-fonts'
+Plug 'tpope/vim-commentary'
+Plug 'easymotion/vim-easymotion'
+" a filetree
+Plug 'scrooloose/nerdtree'
+" autoclose parentheses, brackets, etc
+Plug 'Townk/vim-autoclose'
+" vim autocomplete
+Plug 'Shougo/neocomplete.vim'
+
+call plug#end()
+
+
+" Enable plugins
+filetype plugin indent on
+
+" Remapping Leader
+let mapleader = "\<Space>"
+
+"--- Plugin Configurations
+map <C-n> :NERDTreeToggle<CR>
+
+"--- Better Vim Configurations
+
+" Show and switch to buffers with F5
+nnoremap <F5> :buffers<CR>:buffer<Space>
+
+" Incrementally display search results
+set incsearch
+" Highlight search results
+set hlsearch
+" When searching try to be smart about cases
+set smartcase
+" Use pleasant but very visible search hilighting
+hi Search ctermfg=white ctermbg=173 cterm=none guifg=#ffffff guibg=#e5786d gui=none
+hi! link Visual Search
+" Hide last search pattern with enter
+nnoremap <CR> :noh<CR><CR>
+
+" Turn magic on for regular expressions
+set magic
+
+" Show matching brackets when text indicator is over them
+set showmatch
+
+" Autodetect certain filetypes
+au BufNewFile,BufRead *.md set filetype=markdown
+
+" Syntax highlighting
+syntax on
+
+" Set terminal colors
+set t_Co=256
+set t_ut=
+set termguicolors
+let $NVIM_TUI_ENABLE_TRUE_COLOR=1
+
+" Sensible backspace
+set backspace=2
+
+" Treat long lines as break lines (useful when moving around in them)
+nnoremap j gj
+nnoremap k gk
+
+" Open new splits to right and bottom
+set splitbelow
+set splitright
+
+" Easier split navigations
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
+
+" Configure indenting
+set autoindent
+
+" Tricks to speed up rendering
+set ttyfast
+set nocursorline
+set number
+set lazyredraw
+
+" Configure automatic text width (only if textwidth is set)
+set fo+=t
+
+" Configure tabs
+set tabstop=2
+set shiftwidth=2
+set softtabstop=2
+set expandtab
+
+" Extra command maps
+cmap w!! w !sudo tee > /dev/null %
+
+" Enable syntax highlighting, relative numberings, and mouse selection
+syntax enable
+" set relativenumber
+set number
+set mouse=a
+
+" Set background and theme
+set background=dark
+colorscheme wombat256mod
+
+" Set extra options when running in GUI mode
+if has("gui_running")
+    set guioptions=agm
+    set t_Co=256
+    set guitablabel=%M\ %t
+endif
+:set guifont=Meslo\ LG\ L\ for\ Powerline:h20
+
+" No swap file
+set noswapfile
+
+" Smart tab line for airline
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#buffer_nr_show = 1
+
+"Cycle through buffers
+"nnoremap <C-n> :bnext<CR>
+"nnoremap <C-p> :bprevious<CR>
+
+" Need lua in order for neocomplete to work
+" "--- Neocomplete configuration
+" " Use neocomplete
+" let g:neocomplete#enable_at_startup = 1
+" " Use smartcase
+" let g:neocomplete#enable_smart_case = 1
+
+
+"--- Custom Mappins
+
+" Toggle spell checking
+" z= to show spelling suggestions
+map <F3> :setlocal spell! spelllang=en_us<CR>
+
+" Toggle paste mode
+map <F4> :setlocal paste!<CR>
+
+" Set font size
+
+" Ignore these files when completing names
+set wildignore=.svn,CVS,.git,*.o,*.a,*.class,*.mo,*.la,*.so,*.obj,*.swp,*.jpg,*.png,*.xpm,*.gif,*.pdf,*.bak,*.beam,*.db
+
+" For finger fumbling (in case you leave the shift key held)
+command! W w
+command! Wq wq
+command! WQ wq
+command! Q q
+command! Wa wa
+command! WA wa
+
+" Toggling of relative/absolute line numbers
+function! NumberToggle() "{{{
+	if exists('+relativenumber')
+		:exec "setl rnu!"
+	else
+		setl nu! 
+	endif
+endf "}}}
+
+" Enable persistent undo (so you can undo after closing/opening file)
+set undodir=~/.vim/undo
+set undofile
+set undolevels=1000
+set undoreload=10000
+
+" FZF (make it behave like CtrlP)
+nmap <C-P> :Files<CR>
+
+command! -bang -nargs=? -complete=dir Files
+      \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
+
+command! -bang -nargs=* Ag
+      \ call fzf#vim#ag(<q-args>,
+      \                 <bang>0 ? fzf#vim#with_preview('up:60%')
+      \                         : fzf#vim#with_preview('right:50%:hidden', '?'),
+      \                 <bang>0)
